@@ -1,5 +1,5 @@
 {
-  "registry-mirrors": ["https://b9pmyelo.mirror.aliyuncs.com"],
+  "registry-mirrors": ["https://8rocdsau.mirror.aliyuncs.com"],
   "log-driver": "json-file",
   "log-opts": {
     "max-size": "100m"
