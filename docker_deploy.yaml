@@ -1,0 +1,49 @@
+---
+- hosts: download
+  tasks:
+   - name: 下载docker二进制包
+     shell: $(pwd)/ansible-docker-deploy/files/wgetdocker.sh 
+     tags: download
+  remote_user: root
+  gather_facts: false
+
+- hosts: docker 
+  vars:
+    tmp_dir: '/tmp/docker'
+  remote_user: root
+  gather_facts: false
+
+  tasks:
+    
+  - name: 创建临时目录
+    file: dest={{ tmp_dir }} state=directory
+    tags: mkidrtmp
+
+  - name: 分发并解压docker二进制包
+    unarchive: src={{ item }} dest={{ tmp_dir }}
+    with_fileglob:
+      - "files/docker-*.tgz"
+    tags: tardocker
+
+  - name: 移动docker二进制文件
+    shell: cp -rf {{ tmp_dir }}/docker/* /usr/bin
+    tags: mvdocker
+   
+  - name: 分发service文件
+    copy: src=files/docker.service dest=/usr/lib/systemd/system/
+    tags: copyservice
+  - name: 创建目录
+    file: dest=/etc/docker state=directory
+
+  - name: 配置docker
+    copy: src=files/daemon.json dest=/etc/docker/daemon.json
+    tags: vimdocker
+  - name: 启动docker
+    systemd: name=docker state=restarted enabled=yes daemon_reload=yes
+    tags: startdocker
+
+  - name: 查看状态
+    shell: docker info
+    register: docker 
+  - debug: var=docker.stdout_lines
+
