@@ -1,11 +1,12 @@
 ---
 - hosts: download
-  tasks:
-   - name: 下载docker二进制包
-     shell: $(pwd)/ansible-docker-deploy/files/wgetdocker.sh 
-     tags: download
   remote_user: root
   gather_facts: false
+  tasks:
+
+  - name: 下载docker二进制包
+    get_url: url=https://download.docker.com/linux/static/stable/x86_64/docker-19.03.9.tgz dest=/tmp  
+    tags: download
 
 - hosts: docker 
   vars:
@@ -22,7 +23,7 @@
   - name: 分发并解压docker二进制包
     unarchive: src={{ item }} dest={{ tmp_dir }}
     with_fileglob:
-      - "files/docker-*.tgz"
+      - "/tmp/docker-*.tgz"
     tags: tardocker
 
   - name: 移动docker二进制文件
